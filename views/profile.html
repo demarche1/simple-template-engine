@@ -1,0 +1,9 @@
+<h1>
+  <& this.name &>
+  <& this.profile.age &>
+</h1>
+<p><& this.content &></p>
+
+<&for (var index in this.skills) {&>
+  <& this.skills[index] &>
+<& } &>
