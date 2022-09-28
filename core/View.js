@@ -7,15 +7,19 @@ export default class View {
   #TEMPLATE_PATTERN;
   #SPECIAL_STRUCTURES_PATTERN;
   #code;
-  #cursorPosition;
 
   constructor() {
     this.#TEMPLATE_PATTERN = /<&([^&>]+)?&>/g;
     this.#SPECIAL_STRUCTURES_PATTERN = /(^( )?(if|for|else|switch|case|break|{|}))(.*)?/g,
     this.#code = "var x=[];";
-    this.#cursorPosition = 0;
   }
 
+  /**
+   * Check if HTML file exists in views folder.
+   *
+   * @param {string} file
+   * @return {Array<string, boolean>} 
+   */
   fileExists(file) {
     const { pathname } = new URL(import.meta.url);
     const filePath = path.join(pathname, "..", "..", "views", file);
@@ -24,25 +28,51 @@ export default class View {
     return [filePath, fs.existsSync(filePath)];
   }
 
+  /**
+   * Creates a code structure string to be used in the render function.
+   * 
+   * @example {
+   *  if code is just HTML content, the structure will be: x.push("<h1>");
+   *
+   *  if code is a JavaScript variable, the structure will be: x.push(this.profile.age);
+   *
+   *  if code is a JavaScript structure, the structure will be: code += if(this.profile.age) {
+   *
+   * }
+   * 
+   * 
+   * @param {string} line 
+   * @param {boolean} js
+   * @returns {string}
+   */
   addToCode(line, js) {
     if(js) {
-      if(line.match(this.#SPECIAL_STRUCTURES_PATTERN)) {
+      if(this.#SPECIAL_STRUCTURES_PATTERN.test(line)) {
         return this.#code += line
-      } else {
-        return this.#code += 'x.push(' + line + ');'
       }
-
-      return this.#code += 'x.push(' + line + ');';
+      return this.#code += 'x.push(' + line + ');'
     }
-
-    this.#code += 'x.push("' + line.replace(/"/g, '\\\\"') + '");';
+    return this.#code += 'x.push("' + line.replace(/"/g, '\\\\"') + '");';
   }
 
+  /**
+   * Get all content from a HTML file.
+   *
+   * @param {string} file 
+   * @returns {string}
+   */
   async getFileContent(file) {
     const data = await readFile(file, { encoding: "utf-8" });
     return data.trim();
   }
 
+  /**
+   * Render the HTML file with the data passed.
+   *
+   * @param {string} file 
+   * @param {Object} data 
+   * @returns 
+   */
   async render(file, data) {
     const [filePath, exists] = this.fileExists(file);
 
@@ -52,15 +82,16 @@ export default class View {
     }
 
     const content = await this.getFileContent(filePath);
+    let cursorPosition = 0;
+    let match;
 
-    var match;
     while ((match = this.#TEMPLATE_PATTERN.exec(content))) {
-      this.addToCode(content.slice(this.#cursorPosition, match.index).trim());
+      this.addToCode(content.slice(cursorPosition, match.index).trim());
       this.addToCode(match[1].trim(), true);
-      this.#cursorPosition = match.index + match[0].length;
+      cursorPosition = match.index + match[0].length;
     }
 
-    this.addToCode(content.substring(content.length, this.#cursorPosition));
+    this.addToCode(content.substring(content.length, cursorPosition));
     this.#code += 'return x.join("");';
 
     return new Function(this.#code.replace(/[\\\n]/g, '')).apply(data)
