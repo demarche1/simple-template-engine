@@ -1,4 +1,4 @@
-# Useless template engine, just for the purpose of understanding how the template engine works.
+# This is a super simple template engine, just for the purpose of understanding how the template engine works.
 
 ## How to use
 
