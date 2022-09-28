@@ -13,7 +13,7 @@ v.render('profile.html', {
   name: 'Jhon',
   age: 30,
   address {
-    street: Jhon`s Street,
+    street: "Jhon`s Street",
     number: 987
   },
   skills: ['html', 'css', 'js']
