@@ -16,7 +16,7 @@ v.render('profile.html', {
     street: Jhon`s Street,
     number: 987
   },
-  skils: ['html', 'css', 'js']
+  skilss: ['html', 'css', 'js']
 })
 ```
 
