@@ -36,10 +36,7 @@ export default class View {
    *
    *  if code is a JavaScript variable, the structure will be: x.push(this.profile.age);
    *
-   *  if code is a JavaScript structure, the structure will be: code += if(this.profile.age) {
-   *
-   * }
-   * 
+   *  if code is a JavaScript structure, the structure will be: code += if(this.profile.age)
    * 
    * @param {string} line 
    * @param {boolean} js
@@ -92,6 +89,11 @@ export default class View {
     }
 
     this.addToCode(content.substring(content.length, cursorPosition));
+    /*
+     * The final code result looks like this: 
+     *  "var x = []; x.push('<h1>'); x.push(" + this.name + "); x.push('</h1>'); return x.join('');" 
+     * 
+    */     
     this.#code += 'return x.join("");';
 
     return new Function(this.#code.replace(/[\\\n]/g, '')).apply(data)
